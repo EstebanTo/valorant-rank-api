@@ -6,11 +6,11 @@ app = Flask(__name__)
 
 # Obtén la clave de la API desde las variables de entorno
 API_KEY = os.getenv("TRN_API_KEY", "your_default_api_key")
-PLAYER_PROFILE = "3cm 5secs#fin"
+PLAYER_PROFILE = "3cm 5secs#fin"  # Cambia esto por el ID del jugador si es necesario
 
-@app.route("/rank")
-def rank():
-    return "Test Rank"
+@app.route("/")
+def home():
+    return "Server is running!"
 
 @app.route("/rank", methods=["GET"])
 def get_rank():
@@ -21,6 +21,7 @@ def get_rank():
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             data = response.json()
+            # Extrae el rango del JSON de respuesta
             rank = data['data']['segments'][0]['stats']['rank']['metadata']['tierName']
             return jsonify({"rank": rank})
         else:
@@ -29,4 +30,5 @@ def get_rank():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
+    # Ejecuta la aplicación Flask en el puerto 8000
     app.run(host="0.0.0.0", port=8000)
