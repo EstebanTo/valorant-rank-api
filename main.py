@@ -8,9 +8,9 @@ app = Flask(__name__)
 API_KEY = os.getenv("TRN_API_KEY", "your_default_api_key")
 PLAYER_PROFILE = "3cm 5secs#fin"
 
-@app.route("/")
-def home():
-    return "Server is running!"
+@app.route("/rank")
+def rank():
+    return "Test Rank"
 
 @app.route("/rank", methods=["GET"])
 def get_rank():
