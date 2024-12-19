@@ -4,8 +4,8 @@ import os
 
 app = Flask(__name__)
 
-# Obtén la clave de la API desde las variables de entorno
-API_KEY = os.getenv("TRN_API_KEY", "your_default_api_key")
+# Configuración de la API
+API_KEY = "f7f87a6a-9d98-4f1a-8ec9-ff467386a9ad"  # Nueva clave API
 PLAYER_PROFILE = "3cm 5secs#fin"  # Cambia esto por el ID del jugador si es necesario
 
 @app.route("/")
@@ -34,8 +34,6 @@ def get_rank():
             }), response.status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
