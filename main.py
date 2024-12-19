@@ -1,37 +1,49 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, redirect
 import requests
-import os
 
 app = Flask(__name__)
 
-# Configuración de la API
-API_KEY = "f7f87a6a-9d98-4f1a-8ec9-ff467386a9ad"  # Nueva clave API
-PLAYER_PROFILE = "3cm 5secs#fin"  # Cambia esto por el ID del jugador si es necesario
+# API Key de Riot Games
+RIOT_API_KEY = "414fe9f9-9252-48a7-997a-f80313e96828"
+
+# Región del servidor (ajusta según corresponda)
+REGION = "na1"  # Usa "euw1" para Europa, "na1" para Norteamérica, etc.
 
 @app.route("/")
 def home():
-    return "Server is running!"
+    return "Riot Games API Bot is running!"
 
 @app.route("/rank", methods=["GET"])
 def get_rank():
-    headers = {
-        "TRN-Api-Key": API_KEY,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-    url = f"https://api.tracker.gg/api/v2/valorant/standard/profile/riot/{PLAYER_PROFILE.replace('#', '%23')}"
-
     try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            rank = data['data']['segments'][0]['stats']['rank']['metadata']['tierName']
-            return rank  # Devuelve solo el rango como texto plano
-        else:
-            return jsonify({
-                "error": "API request failed",
-                "status_code": response.status_code,
-                "response_text": response.text
-            }), response.status_code
+        # Obtener el Act ID actual (necesario para consultar clasificaciones)
+        content_url = f"https://{REGION}.api.riotgames.com/val/content/v1/contents"
+        headers = {"X-Riot-Token": RIOT_API_KEY}
+
+        content_response = requests.get(content_url, headers=headers)
+        if content_response.status_code != 200:
+            return jsonify({"error": "Failed to fetch Act ID", "details": content_response.json()}), content_response.status_code
+
+        # Extraer el Act ID activo
+        content_data = content_response.json()
+        act_id = None
+        for act in content_data["acts"]:
+            if act["isActive"]:
+                act_id = act["id"]
+                break
+
+        if not act_id:
+            return jsonify({"error": "No active Act ID found"}), 404
+
+        # Consultar clasificaciones por Act ID
+        leaderboard_url = f"https://{REGION}.api.riotgames.com/val/ranked/v1/leaderboards/by-act/{act_id}"
+        leaderboard_response = requests.get(leaderboard_url, headers=headers)
+        if leaderboard_response.status_code != 200:
+            return jsonify({"error": "Failed to fetch leaderboard", "details": leaderboard_response.json()}), leaderboard_response.status_code
+
+        leaderboard_data = leaderboard_response.json()
+        return jsonify(leaderboard_data)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
