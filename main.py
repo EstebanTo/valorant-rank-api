@@ -9,6 +9,10 @@ RIOT_API_KEY = "414fe9f9-9252-48a7-997a-f80313e96828"
 # Región del servidor (ajusta según corresponda)
 REGION = "na1"  # Usa "euw1" para Europa, "na1" para Norteamérica, etc.
 
+@app.route('/riot.txt')
+def serve_riot_file():
+    return send_from_directory('.', 'riot.txt')
+    
 @app.route("/")
 def home():
     return "Riot Games API Bot is running!"
